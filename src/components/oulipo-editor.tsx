@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Type, AlertCircle } from 'lucide-react';
 import { CONSTRAINTS, type Constraint } from '@/lib/constraints';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +20,10 @@ export default function OulipoEditor() {
   const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
+  const paramCardRef = useRef<HTMLDivElement>(null);
+  const editorCardRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -28,30 +33,46 @@ export default function OulipoEditor() {
     [constraintId]
   );
 
+  // Scroll to param card when a constraint is selected
   useEffect(() => {
-    setText('');
-    setParam('');
-    setError(null);
-  }, [constraintId]);
-  
+    if (selectedConstraint && paramCardRef.current) {
+      paramCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [selectedConstraint]);
+
+  // Scroll to editor card when param is selected
+  useEffect(() => {
+    if (param && editorCardRef.current) {
+      editorCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [param]);
+
+  // Scroll to error
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [error]);
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
 
     if (selectedConstraint && param) {
       const { isValid, error: validationError } = selectedConstraint.validate(newText, param);
-      if (isValid) {
-        setText(newText);
-        if (error) setError(null);
-      } else {
+      if (!isValid) {
         setError(validationError || 'Contrainte violée.');
+      } else if (error) {
+        setError(null);
       }
-    } else {
-      setText(newText);
     }
+    setText(newText);
   };
 
   const handleConstraintChange = (id: ConstraintId) => {
     setConstraintId(id);
+    setParam('');
+    setText('');
+    setError(null);
   }
 
   const handleParamChange = (newParam: string) => {
@@ -60,7 +81,8 @@ export default function OulipoEditor() {
     setError(null);
   }
 
-  const canWrite = (constraintId !== 'none' && param !== '') || constraintId === 'none';
+  const showParamCard = !!selectedConstraint;
+  const showEditorCard = showParamCard && !!param;
 
   if (!isClient) {
     return null; // or a loading skeleton
@@ -83,7 +105,7 @@ export default function OulipoEditor() {
         <CardContent>
           <RadioGroup value={constraintId} onValueChange={handleConstraintChange} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {CONSTRAINTS.map((constraint) => (
-              <Label key={constraint.id} htmlFor={constraint.id} className="flex flex-col items-start gap-2 rounded-md border p-4 hover:bg-accent/50 hover:text-accent-foreground [&:has([data-state=checked])]:border-primary">
+              <Label key={constraint.id} htmlFor={constraint.id} className="flex flex-col items-start gap-2 rounded-md border p-4 hover:bg-accent/50 hover:text-accent-foreground [&:has([data-state=checked])]:border-primary cursor-pointer">
                  <div className="flex items-center gap-2">
                   <RadioGroupItem value={constraint.id} id={constraint.id} />
                   <span className="font-bold">{constraint.name}</span>
@@ -95,8 +117,8 @@ export default function OulipoEditor() {
         </CardContent>
       </Card>
 
-      {selectedConstraint && (
-        <div className="animate-in fade-in-50 duration-500">
+      {showParamCard && (
+        <div ref={paramCardRef} className="animate-in fade-in-50 duration-500">
           <Card>
             <CardHeader>
               <CardTitle>2. Définissez le paramètre</CardTitle>
@@ -122,28 +144,27 @@ export default function OulipoEditor() {
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>3. Écrivez</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={text}
-            onChange={handleTextChange}
-            disabled={!canWrite}
-            placeholder={
-              canWrite 
-                ? "Commencez à taper..." 
-                : "Veuillez sélectionner une contrainte et un paramètre."
-            }
-            className="typewriter-textarea"
-            rows={10}
-          />
-        </CardContent>
-      </Card>
+      {showEditorCard && (
+        <div ref={editorCardRef} className="animate-in fade-in-50 duration-500">
+          <Card>
+            <CardHeader>
+              <CardTitle>3. Écrivez</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={text}
+                onChange={handleTextChange}
+                placeholder="Commencez à taper..."
+                className="typewriter-textarea"
+                rows={10}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       {error && (
-        <div className="animate-in fade-in-50 duration-500">
+        <div ref={errorRef} className="animate-in fade-in-50 duration-500">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Erreur de contrainte</AlertTitle>
