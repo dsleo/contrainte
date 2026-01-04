@@ -88,7 +88,6 @@ export default function OulipoEditor() {
           <Type className="w-10 h-10" />
           <h1 className="text-4xl font-bold">La Contrainte</h1>
         </div>
-        <p className="text-muted-foreground">L'art d'écrire sous contrainte.</p>
       </header>
 
       <Card>

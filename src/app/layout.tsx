@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: 'La Contrainte',
-  description: 'L\'art d\'écrire sous contrainte.',
+  description: 'Une application pour écrire avec des contraintes Oulipiennes.',
 };
 
 export default function RootLayout({
