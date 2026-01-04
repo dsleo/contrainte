@@ -110,15 +110,14 @@ export default function OulipoEditor() {
         </CardContent>
       </Card>
 
-      {showParamCard && (
+      {showParamCard && selectedConstraint && (
         <div ref={paramCardRef} className="animate-in fade-in-50 duration-500">
           <Card>
             <CardHeader>
-              <CardTitle>2. Définissez le paramètre</CardTitle>
+              <CardTitle>2. {selectedConstraint.parameter.label}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="param-select">{selectedConstraint.parameter.label}</Label>
                 <Select value={param} onValueChange={handleParamChange}>
                   <SelectTrigger id="param-select" className="w-full md:w-[180px]">
                     <SelectValue placeholder="Sélectionner..." />
