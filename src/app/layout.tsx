@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Oulipo Editor',
-  description: 'Un éditeur de texte sous contraintes oulipiennes.',
+  title: 'La Contrainte',
+  description: 'L\'art d\'écrire sous contrainte.',
 };
 
 export default function RootLayout({

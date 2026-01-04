@@ -71,7 +71,7 @@ export default function OulipoEditor() {
       <header className="text-center space-y-2">
         <div className="flex justify-center items-center gap-4 text-primary">
           <Type className="w-10 h-10" />
-          <h1 className="text-4xl font-bold">Oulipo Editor</h1>
+          <h1 className="text-4xl font-bold">La Contrainte</h1>
         </div>
         <p className="text-muted-foreground">L'art d'écrire sous contrainte.</p>
       </header>
