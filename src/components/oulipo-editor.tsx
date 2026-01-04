@@ -17,12 +17,10 @@ export default function OulipoEditor() {
   const [constraintId, setConstraintId] = useState<ConstraintId>('none');
   const [param, setParam] = useState<string>('');
   const [text, setText] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
   const paramCardRef = useRef<HTMLDivElement>(null);
   const editorCardRef = useRef<HTMLDivElement>(null);
-  const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -47,38 +45,28 @@ export default function OulipoEditor() {
     }
   }, [param]);
 
-  // Scroll to error
-  useEffect(() => {
-    if (error && errorRef.current) {
-      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [error]);
-
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
 
     if (selectedConstraint && param) {
-      const { isValid, error: validationError } = selectedConstraint.validate(newText, param);
-      if (!isValid) {
-        setError(validationError || 'Contrainte violée.');
-      } else if (error) {
-        setError(null);
+      const { isValid } = selectedConstraint.validate(newText, param);
+      if (isValid) {
+        setText(newText);
       }
+    } else {
+      setText(newText);
     }
-    setText(newText);
   };
 
   const handleConstraintChange = (id: ConstraintId) => {
     setConstraintId(id);
     setParam('');
     setText('');
-    setError(null);
   }
 
   const handleParamChange = (newParam: string) => {
     setParam(newParam);
     setText('');
-    setError(null);
   }
 
   const showParamCard = !!selectedConstraint;
@@ -163,15 +151,6 @@ export default function OulipoEditor() {
         </div>
       )}
       
-      {error && (
-        <div ref={errorRef} className="animate-in fade-in-50 duration-500">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erreur de contrainte</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      )}
     </div>
   );
 }
