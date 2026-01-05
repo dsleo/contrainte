@@ -1,7 +1,17 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
+
+const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Enable static export for GitHub Pages
+  output: 'export',
+
+  // Serve from /contrainte when deployed to GitHub Pages
+  basePath: isProd ? '/contrainte' : '',
+  assetPrefix: isProd ? '/contrainte/' : '',
+
+  // Optional: nicer static URLs
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
