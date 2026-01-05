@@ -19,6 +19,7 @@ export default function OulipoEditor() {
   const [param, setParam] = useState<string>('');
   const [text, setText] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [violationCount, setViolationCount] = useState<number>(0);
   const [isClient, setIsClient] = useState(false);
 
   const paramCardRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export default function OulipoEditor() {
         // valid text. Only allow edits that shorten the text so they can
         // backspace their way back to a valid state.
         if (currentText.length >= text.length) {
+          setViolationCount((count) => count + 1);
           return;
         }
 
@@ -80,11 +82,23 @@ export default function OulipoEditor() {
     setParam('');
     setText('');
     setError(null);
+    setViolationCount(0);
   }
 
   const handleParamChange = (newParam: string) => {
     setParam(newParam);
-    validateAndSetText(text);
+    setViolationCount(0);
+
+    if (selectedConstraint) {
+      const { isValid, error: validationError } = selectedConstraint.validate(text, newParam);
+      if (!isValid) {
+        setError(validationError || 'Erreur de contrainte');
+      } else {
+        setError(null);
+      }
+    } else {
+      setError(null);
+    }
   }
 
   const showParamCard = !!selectedConstraint;
@@ -165,6 +179,24 @@ export default function OulipoEditor() {
                 )}
                 rows={10}
               />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div />
+                <div
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 border",
+                    violationCount > 0
+                      ? "border-destructive/40 text-destructive"
+                      : "border-muted text-muted-foreground"
+                  )}
+                >
+                  <AlertCircle className="h-3 w-3" />
+                  <span>
+                    {violationCount === 0
+                      ? "Aucune violation de la contrainte"
+                      : `${violationCount} ${violationCount === 1 ? "violation" : "violations"} de la contrainte`}
+                  </span>
+                </div>
+              </div>
               {error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />

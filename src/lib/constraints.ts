@@ -1,11 +1,18 @@
 export const VOWELS: readonly string[] = ['a', 'e', 'i', 'o', 'u', 'y'];
 export const CONSONANTS: readonly string[] = [
-  'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 
+  'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
   'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'z'
 ];
 export const ALPHABET: readonly string[] = [...VOWELS, ...CONSONANTS].sort();
 
 const WORD_REGEX = /[\w'-]+(?<!-)/g;
+
+// Normalize French letters by stripping accents/diacritics so that
+// "é, è, ê, ë" are treated as "e", "à, â" as "a", "ù, û" as "u", etc.
+// This lets constraints behave intuitively in French: a lipogram in "e"
+// will also forbid "é", and monovocalism/alliteration work on base letters.
+const normalizeText = (input: string): string =>
+  input.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 export type Constraint = {
   id: 'lipogram' | 'monovocalism' | 'tautogram' | 'alliteration';
@@ -27,7 +34,8 @@ export const CONSTRAINTS: readonly Constraint[] = [
     parameter: { type: 'letter', label: 'Lettre interdite', options: ALPHABET },
     validate: (text, param) => {
       const forbiddenLetter = param.toLowerCase();
-      if (text.toLowerCase().includes(forbiddenLetter)) {
+      const normalizedText = normalizeText(text.toLowerCase());
+      if (normalizedText.includes(forbiddenLetter)) {
         return { isValid: false, error: `Lettre interdite détectée : "${forbiddenLetter}"` };
       }
       return { isValid: true };
@@ -41,7 +49,8 @@ export const CONSTRAINTS: readonly Constraint[] = [
     validate: (text, param) => {
       const allowedVowel = param.toLowerCase();
       const otherVowels = VOWELS.filter(v => v !== allowedVowel);
-      for (const char of text.toLowerCase()) {
+      const normalizedText = normalizeText(text.toLowerCase());
+      for (const char of normalizedText) {
         if (otherVowels.includes(char)) {
           return { isValid: false, error: `Voyelle non autorisée détectée : "${char}"` };
         }
@@ -58,7 +67,8 @@ export const CONSTRAINTS: readonly Constraint[] = [
       const words = text.match(WORD_REGEX) || [];
       const initialLetter = param.toLowerCase();
       for (const word of words) {
-        if (!word.toLowerCase().startsWith(initialLetter)) {
+        const normalizedWord = normalizeText(word.toLowerCase());
+        if (!normalizedWord.startsWith(initialLetter)) {
           return { isValid: false, error: `Le mot "${word}" ne commence pas par "${initialLetter}"` };
         }
       }
@@ -74,7 +84,8 @@ export const CONSTRAINTS: readonly Constraint[] = [
       const words = text.match(WORD_REGEX) || [];
       const initialConsonant = param.toLowerCase();
       for (const word of words) {
-        if (!word.toLowerCase().startsWith(initialConsonant)) {
+        const normalizedWord = normalizeText(word.toLowerCase());
+        if (!normalizedWord.startsWith(initialConsonant)) {
           return { isValid: false, error: `Le mot "${word}" ne commence pas par la consonne "${initialConsonant}"` };
         }
       }
