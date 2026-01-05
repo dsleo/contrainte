@@ -1,3 +1,3 @@
 # Contrainte
 
-Simple text editor to write with constraintes.
+A simple text editor to write with constraintes...
